@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/urfave/cli/v2"
-	"github.com/webitel/meetings/config"
+	"github.com/webitel/web-meeting-backend/config"
 )
 
 func Run() error {

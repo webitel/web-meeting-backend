@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/webitel/meetings/infra/consul/mocks"
+	"github.com/webitel/web-meeting-backend/infra/consul/mocks"
 )
 
 func TestCluster_Start(t *testing.T) {

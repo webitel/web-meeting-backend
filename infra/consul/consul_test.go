@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/webitel/meetings/infra/consul/mocks"
+	"github.com/webitel/web-meeting-backend/infra/consul/mocks"
 )
 
 // newTestConsul - хелпер для створення екземпляра Consul з моком для тестів.

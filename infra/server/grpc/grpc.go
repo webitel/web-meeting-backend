@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/webitel/meetings/infra/server/interceptor"
+	"github.com/webitel/web-meeting-backend/infra/server/interceptor"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/webitel/meetings/infra/auth"
+	"github.com/webitel/web-meeting-backend/infra/auth"
 )
 
 type Server struct {

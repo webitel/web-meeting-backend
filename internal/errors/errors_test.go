@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	werror "github.com/webitel/meetings/internal/errors"
+	werror "github.com/webitel/web-meeting-backend/internal/errors"
 )
 
 func TestErrWithValue_Format(t *testing.T) {

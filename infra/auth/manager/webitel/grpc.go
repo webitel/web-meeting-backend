@@ -14,9 +14,9 @@ import (
 	authclient "buf.build/gen/go/webitel/webitel-go/grpc/go/_gogrpc"
 	authmodel "buf.build/gen/go/webitel/webitel-go/protocolbuffers/go"
 
-	"github.com/webitel/meetings/infra/auth"
-	session "github.com/webitel/meetings/infra/auth/session/user"
-	"github.com/webitel/meetings/internal/errors"
+	"github.com/webitel/web-meeting-backend/infra/auth"
+	session "github.com/webitel/web-meeting-backend/infra/auth/session/user"
+	"github.com/webitel/web-meeting-backend/internal/errors"
 )
 
 var _ auth.Manager = &Manager{}

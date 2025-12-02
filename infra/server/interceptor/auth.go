@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"strings"
 
-	api "github.com/webitel/meetings/gen/go/api/meetings"
-	"github.com/webitel/meetings/infra/auth"
-	errors "github.com/webitel/meetings/internal/errors"
+	api "github.com/webitel/web-meeting-backend/gen/go/api/meetings"
+	"github.com/webitel/web-meeting-backend/infra/auth"
+	errors "github.com/webitel/web-meeting-backend/internal/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"

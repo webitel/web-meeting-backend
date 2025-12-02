@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/webitel/meetings/infra/auth"
+	"github.com/webitel/web-meeting-backend/infra/auth"
 	"strings"
 	"time"
 )

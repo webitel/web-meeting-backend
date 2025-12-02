@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	werror "github.com/webitel/meetings/internal/errors"
+	werror "github.com/webitel/web-meeting-backend/internal/errors"
 )
 
 type rpcError struct {

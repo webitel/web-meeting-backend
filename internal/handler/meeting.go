@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 
-	api "github.com/webitel/meetings/gen/go/api/meetings"
+	api "github.com/webitel/web-meeting-backend/gen/go/api/meetings"
 )
 
 type MeetingHandler interface {

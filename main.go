@@ -3,7 +3,7 @@ package main
 import (
 	"log/slog"
 
-	"github.com/webitel/meetings/cmd"
+	"github.com/webitel/web-meeting-backend/cmd"
 )
 
 func main() {
