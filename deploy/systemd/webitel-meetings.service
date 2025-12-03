@@ -1,0 +1,17 @@
+[Unit]
+Description=Webitel Web Meetings startup process
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+TimeoutStartSec=0
+
+User=webitel
+Group=webitel
+
+EnvironmentFile=/etc/default/webitel-meetings
+ExecStart=/usr/local/bin/webitel-meetings server
+
+[Install]
+WantedBy=default.target
