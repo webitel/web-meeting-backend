@@ -2,8 +2,9 @@ package consul
 
 import (
 	"fmt"
-	"log/slog"
 	"time"
+
+	"github.com/webitel/wlog"
 )
 
 var (
@@ -19,14 +20,14 @@ type Cluster struct {
 	consulAddr string
 	name       string
 	discovery  *Consul
-	log        *slog.Logger
+	log        *wlog.Logger
 }
 
-func NewCluster(name, consulAddr string, log *slog.Logger) *Cluster {
+func NewCluster(name, consulAddr string, log *wlog.Logger) *Cluster {
 	return &Cluster{
 		name:       name,
 		consulAddr: consulAddr,
-		log:        log.With(slog.String("scope", "consul")),
+		log:        log.With(wlog.String("scope", "consul")),
 	}
 }
 

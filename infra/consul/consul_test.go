@@ -3,7 +3,6 @@ package consul
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"testing"
 	"time"
@@ -12,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/webitel/wlog"
 
 	"github.com/webitel/web-meeting-backend/infra/consul/mocks"
 )
@@ -24,7 +25,7 @@ func newTestConsul(agent Agent, checkFn CheckFunction) *Consul {
 
 	return &Consul{
 		id:      "test-instance-id",
-		log:     slog.Default(),
+		log:     wlog.NewLogger(&wlog.LoggerConfiguration{EnableConsole: false}),
 		agent:   agent,
 		stop:    make(chan struct{}),
 		check:   checkFn,

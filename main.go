@@ -1,15 +1,14 @@
 package main
 
 import (
-	"log/slog"
+	"fmt"
 
 	"github.com/webitel/web-meeting-backend/cmd"
 )
 
 func main() {
-	err := cmd.Run()
-	if err != nil {
-		slog.Error(err.Error())
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 }

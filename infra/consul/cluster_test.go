@@ -2,13 +2,14 @@ package consul
 
 import (
 	"errors"
-	"log/slog"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/webitel/wlog"
 
 	"github.com/webitel/web-meeting-backend/infra/consul/mocks"
 )
@@ -26,7 +27,7 @@ func TestCluster_Start(t *testing.T) {
 	// Робимо тести швидкими
 	reconnectDuration = 1 * time.Millisecond
 
-	cluster := NewCluster("test-app", "consul:8500", slog.Default())
+	cluster := NewCluster("test-app", "consul:8500", wlog.NewLogger(&wlog.LoggerConfiguration{EnableConsole: false}))
 
 	t.Run("Successful registration on first attempt", func(t *testing.T) {
 		// Arrange
@@ -34,11 +35,11 @@ func TestCluster_Start(t *testing.T) {
 		mockConsulInstance := &Consul{
 			id:    "test-id",
 			agent: mockAgent,
-			log:   slog.Default(),
+			log:   wlog.NewLogger(&wlog.LoggerConfiguration{EnableConsole: true}),
 			stop:  make(chan struct{}),
 			check: func() error { return nil },
 		}
-		newConsul = func(id, consulAgentAddr string, log *slog.Logger, check CheckFunction) (*Consul, error) {
+		newConsul = func(id, consulAgentAddr string, log *wlog.Logger, check CheckFunction) (*Consul, error) {
 			return mockConsulInstance, nil
 		}
 
@@ -61,11 +62,11 @@ func TestCluster_Start(t *testing.T) {
 		mockConsulInstance := &Consul{
 			id:    "test-id",
 			agent: mockAgent,
-			log:   slog.Default(),
+			log:   wlog.NewLogger(&wlog.LoggerConfiguration{EnableConsole: true}),
 			stop:  make(chan struct{}),
 			check: func() error { return nil },
 		}
-		newConsul = func(id, consulAgentAddr string, log *slog.Logger, check CheckFunction) (*Consul, error) {
+		newConsul = func(id, consulAgentAddr string, log *wlog.Logger, check CheckFunction) (*Consul, error) {
 			return mockConsulInstance, nil
 		}
 
@@ -90,11 +91,11 @@ func TestCluster_Start(t *testing.T) {
 		mockConsulInstance := &Consul{
 			id:    "test-id",
 			agent: mockAgent,
-			log:   slog.Default(),
+			log:   wlog.NewLogger(&wlog.LoggerConfiguration{EnableConsole: true}),
 			stop:  make(chan struct{}),
 			check: func() error { return nil },
 		}
-		newConsul = func(id, consulAgentAddr string, log *slog.Logger, check CheckFunction) (*Consul, error) {
+		newConsul = func(id, consulAgentAddr string, log *wlog.Logger, check CheckFunction) (*Consul, error) {
 			return mockConsulInstance, nil
 		}
 

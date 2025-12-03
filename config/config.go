@@ -1,19 +1,31 @@
 package config
 
 type Config struct {
-	ServerAddress string
-	Redis         RedisConfig
-	Consul        Consul
-	DatabaseURI   string
+	Service     Service
+	Log         LogSettings
+	SqlSettings SqlSettings
+	Pubsub      Pubsub
 }
 
-type RedisConfig struct {
-	Address  string
-	Login    string
-	Password string
-	DB       int
-}
-
-type Consul struct {
+type Pubsub struct {
 	Address string
+}
+
+type SqlSettings struct {
+	DSN string
+}
+
+type Service struct {
+	Id        string
+	Address   string
+	Consul    string
+	SecretKey string
+}
+
+type LogSettings struct {
+	Lvl     string
+	Json    bool
+	Otel    bool
+	File    string
+	Console bool
 }
