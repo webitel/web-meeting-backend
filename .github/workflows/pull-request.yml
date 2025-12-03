@@ -1,0 +1,53 @@
+name: PR (webitel-meetings)
+run-name: "webitel-meetings@pr${{ github.event.pull_request.number }}#${{ github.run_number }} - ${{ github.event.pull_request.title }}"
+
+on:
+  pull_request:
+
+permissions: { contents: read }
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Prepare
+    uses: webitel/reusable-workflows/.github/workflows/golang-prepare.yml@v1.0.6
+    with:
+      development-branch: ${{ github.event.repository.default_branch }}
+      triggered-branch: ${{ github.event.pull_request.base.ref }}
+
+  checks:
+    name: Checks
+    needs: [ prepare ]
+    uses: webitel/reusable-workflows/.github/workflows/golang-checks.yml@v1.0.6
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+
+  compile:
+    name: Build
+    needs: [ prepare ]
+    uses: webitel/reusable-workflows/.github/workflows/golang-build.yml@v1.0.6
+    with:
+      binary-name: webitel-meetings
+      ldflags: >
+        -s -w
+        
+
+      version: ${{ needs.prepare.outputs.version }}
+      version-build: ${{ github.run_number }}
+      prerelease: dev~pr${{ github.event.pull_request.number }}
+      package-name: ${{ vars.SERVICE_NAME }}
+      package-description: ${{ github.event.repository.description }}
+      package-contents: |
+        src=deploy/systemd/${{ vars.SERVICE_NAME }}.service dst=/etc/systemd/system/${{ vars.SERVICE_NAME }}.service type=config
+        src=.env.example dst=/etc/default/${{ vars.SERVICE_NAME }} type=config
+        
+
+      scripts: |
+        preinstall: deploy/debian/preinst.sh
+        postinstall: deploy/debian/postinst.sh
+        preremove: deploy/debian/prerm.sh
+        
