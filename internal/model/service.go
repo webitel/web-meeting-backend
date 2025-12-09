@@ -1,3 +1,3 @@
 package model
 
-const ServiceName = "web-meeting-backend"
+const ServiceName = "web_meeting_backend"
