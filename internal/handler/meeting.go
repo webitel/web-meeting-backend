@@ -4,6 +4,9 @@ import (
 	"context"
 	"github.com/webitel/web-meeting-backend/infra/grpc_srv"
 	"github.com/webitel/web-meeting-backend/internal/model"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"time"
 
 	wmb "github.com/webitel/web-meeting-backend/gen/web-meeting-backend"
 	"github.com/webitel/wlog"
@@ -55,7 +58,11 @@ func (h *MeetingHandler) GetMeeting(ctx context.Context, request *wmb.GetMeeting
 		return nil, err
 	}
 	if meeting == nil {
-		return nil, nil // gRPC поверне OK з nil body, або можна повернути status.NotFound
+		return nil, status.Errorf(codes.NotFound, "not found")
+	}
+
+	if time.Now().Unix() > meeting.ExpiresAt {
+		return nil, status.Errorf(codes.Aborted, "expired")
 	}
 
 	res := &wmb.Meeting{
@@ -82,7 +89,11 @@ func (h *MeetingHandler) GetMeetingView(ctx context.Context, request *wmb.GetMee
 		return nil, err
 	}
 	if meeting == nil {
-		return nil, nil // gRPC поверне OK з nil body, або можна повернути status.NotFound
+		return nil, status.Errorf(codes.NotFound, "not found")
+	}
+
+	if time.Now().Unix() > meeting.ExpiresAt && meeting.CallId == nil {
+		return nil, status.Errorf(codes.Aborted, "expired")
 	}
 
 	res := &wmb.MeetingView{

@@ -94,11 +94,6 @@ func (s *MeetingService) GetMeeting(ctx context.Context, meetingId string) (*mod
 		return nil, nil // Not found in DB
 	}
 
-	// 4. Check expiration
-	if time.Now().Unix() > meeting.ExpiresAt && meeting.CallId == nil {
-		return nil, fmt.Errorf("meeting expired")
-	}
-
 	meeting.AllowSatisfaction = meeting.CallId != nil && meeting.Satisfaction == nil
 
 	return meeting, nil
