@@ -16,9 +16,8 @@ type MeetingService interface {
 	CreateMeeting(ctx context.Context, domainId int64, title string, expireSec int64, basePath string, vars map[string]string) (string, string, error)
 	GetMeeting(ctx context.Context, id string) (*model.Meeting, error)
 	DeleteMeeting(ctx context.Context, id string) error
-	CloseChatByMeetingId(ctx context.Context, meetingId string) error
 	Satisfaction(ctx context.Context, meetingId string, satisfaction string) error
-	SetCallId(ctx context.Context, meetingId string, callId string) error
+	CloseByCall(ctx context.Context, meetingId string, callId string) (string, error)
 }
 
 type MeetingHandler struct {

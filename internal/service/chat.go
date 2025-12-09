@@ -7,22 +7,18 @@ import (
 )
 
 type ChatService struct {
-	ctx context.Context
 	log *wlog.Logger
 	api *chat.Client
 }
 
-func NewChatService(ctx context.Context, log *wlog.Logger, api *chat.Client) *ChatService {
+func NewChatService(log *wlog.Logger, api *chat.Client) *ChatService {
 	return &ChatService{
-		ctx: ctx,
 		log: log,
 		api: api,
 	}
 }
 
-func (c *ChatService) CloseChat(meetingId string) error {
-	conversationId := meetingId
-	closerId := meetingId
+func (c *ChatService) CloseChat(ctx context.Context, conversationId, closerId string, authUserId int64) error {
 
-	return c.api.CloseChat(c.ctx, conversationId, closerId)
+	return c.api.CloseChat(ctx, conversationId, closerId, authUserId)
 }

@@ -2,6 +2,7 @@ package pgsql
 
 import (
 	"context"
+	"errors"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -83,4 +84,8 @@ func (r *rows) Columns() []string {
 	}
 
 	return c
+}
+
+func (db *DB) IsNotFoundErr(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
 }

@@ -96,6 +96,7 @@ where id = @id`, pgx.NamedArgs{
 
 	return nil
 }
+
 func (s *MeetingStoreImpl) SetSatisfaction(ctx context.Context, id string, satisfaction string) error {
 	err := s.db.Exec(ctx, `update meetings.web_meetings
 set satisfaction = @satisfaction
@@ -109,6 +110,30 @@ where id = @id`, pgx.NamedArgs{
 	}
 
 	return nil
+}
+
+// TODO move to service
+func (s *MeetingStoreImpl) GetChatCloseInfo(ctx context.Context, id string) (*model.ChatCloseInfo, error) {
+	var res model.ChatCloseInfo
+	err := s.db.Get(ctx, &res, `select c.id as conversation_id, ch.id closer_id, ch.user_id as auth_user_id
+from chat.conversation c
+    left join chat.channel ch on ch.conversation_id = c.id
+where (c.props->>'wbt_meeting_id') = @id
+    and c.closed_at isnull
+order by c.created_at desc, ch.created_at
+limit 1`, pgx.NamedArgs{
+		"id": id,
+	})
+
+	if err != nil {
+		if s.db.IsNotFoundErr(err) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 func (s *MeetingStoreImpl) cleanup(ctx context.Context) error {

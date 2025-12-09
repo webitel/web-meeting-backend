@@ -26,12 +26,12 @@ func NewClient(consulTarget string, l *wlog.Logger) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) CloseChat(ctx context.Context, convId, closerId string) error {
+func (c *Client) CloseChat(ctx context.Context, convId, closerId string, authUserId int64) error {
 	_, err := c.api.API.CloseConversation(ctx, &chat.CloseConversationRequest{
 		ConversationId:  convId,
 		CloserChannelId: closerId,
 		Cause:           0,
-		AuthUserId:      0,
+		AuthUserId:      authUserId,
 	})
 	return err
 }

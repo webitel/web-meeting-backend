@@ -20,6 +20,8 @@ type MeetingStore interface {
 	Delete(ctx context.Context, id string) error
 	SetCallId(ctx context.Context, id string, callId string) error
 	SetSatisfaction(ctx context.Context, id string, satisfaction string) error
+
+	GetChatCloseInfo(ctx context.Context, id string) (*model.ChatCloseInfo, error)
 }
 
 type MeetingService struct {
@@ -130,8 +132,28 @@ func (s *MeetingService) SetCallId(ctx context.Context, meetingId string, callId
 	return s.store.SetCallId(ctx, id, callId)
 }
 
-func (s *MeetingService) CloseChatByMeetingId(ctx context.Context, meetingId string) error {
-	return errors.New("TODO")
+func (s *MeetingService) CloseByCall(ctx context.Context, meetingId string, callId string) (string, error) {
+	id, err := s.decodeToken(meetingId)
+	if err != nil {
+		return "", err
+	}
+
+	err = s.store.SetCallId(ctx, id, callId)
+	if err != nil {
+		return id, err
+	}
+
+	chatInfo, err := s.store.GetChatCloseInfo(ctx, id)
+	if err != nil {
+		s.log.Error(err.Error(), wlog.Err(err))
+		return id, nil
+	}
+
+	if chatInfo == nil {
+		return id, nil
+	}
+
+	return id, s.chat.CloseChat(ctx, chatInfo.ConversationId, chatInfo.CloserId, chatInfo.AuthUserId)
 }
 
 func (s *MeetingService) Satisfaction(ctx context.Context, meetingId string, satisfaction string) error {

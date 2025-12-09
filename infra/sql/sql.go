@@ -48,4 +48,5 @@ type Store interface {
 	Exec(ctx context.Context, sql string, args pgx.NamedArgs) error
 	Close() error
 	Begin(ctx context.Context) (pgx.Tx, error)
+	IsNotFoundErr(err error) bool
 }
