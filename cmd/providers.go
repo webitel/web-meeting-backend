@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/webitel/web-meeting-backend/infra/chat"
+	"github.com/webitel/web-meeting-backend/infra/engine"
 	"github.com/webitel/web-meeting-backend/infra/pubsub"
-	"github.com/webitel/web-meeting-backend/internal/store/memory"
 	sqlStore "github.com/webitel/web-meeting-backend/internal/store/sql"
 
 	"github.com/webitel/web-meeting-backend/config"
@@ -133,6 +133,21 @@ func ProvideChat(cfg *config.Config, l *wlog.Logger, lc fx.Lifecycle) (*chat.Cli
 	return cli, nil
 }
 
+func ProvideEngine(cfg *config.Config, l *wlog.Logger, lc fx.Lifecycle) (*engine.Client, error) {
+	cli, err := engine.NewClient(cfg.Service.Consul, l)
+	if err != nil {
+		return nil, err
+	}
+
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return cli.Close()
+		},
+	})
+
+	return cli, nil
+}
+
 func ProvideContext() context.Context {
 	return context.Background()
 }
@@ -144,16 +159,9 @@ func ProvideMeetingStore(
 	log *wlog.Logger,
 	lc fx.Lifecycle,
 ) (service.MeetingStore, error) {
-	// 1. In-Memory Mode
-	if cfg.SqlSettings.DSN == "" {
-		log.Info("Using In-Memory Meeting Store (LRU)")
-		return memory.NewMeetingMemoryStore(log), nil
-	}
 
-	// 2. SQL Mode
 	log.Info("Using SQL Meeting Store (PostgreSQL)")
 
-	// Ініціалізуємо підключення до БД тут, щоб не робити це глобально, якщо БД не потрібна
 	db, err := pgsql.New(ctx, cfg.SqlSettings.DSN, log)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -161,7 +169,6 @@ func ProvideMeetingStore(
 
 	cancelCtx, cancel := context.WithCancel(ctx)
 
-	// Реєструємо закриття з'єднання
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			cancel()

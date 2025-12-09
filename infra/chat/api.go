@@ -7,7 +7,7 @@ import (
 	"github.com/webitel/wlog"
 )
 
-const ChatServiceName = "webitel.chat.server"
+const ServiceName = "webitel.chat.server"
 
 type Client struct {
 	api *grpc_client.Client[chat.ChatServiceClient]
@@ -15,7 +15,7 @@ type Client struct {
 }
 
 func NewClient(consulTarget string, l *wlog.Logger) (*Client, error) {
-	api, err := grpc_client.NewClient[chat.ChatServiceClient](consulTarget, ChatServiceName, chat.NewChatServiceClient)
+	api, err := grpc_client.NewClient[chat.ChatServiceClient](consulTarget, ServiceName, chat.NewChatServiceClient)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+const (
+	MeetingSatisfactionVarName = "meeting_satisfaction"
+)
+
 type CallHangupData struct {
 	Cause     *string `json:"cause"`
 	MeetingId *string `json:"meeting_id,omitempty"`

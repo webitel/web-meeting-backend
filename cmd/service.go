@@ -12,7 +12,6 @@ import (
 	"github.com/webitel/web-meeting-backend/config"
 	"github.com/webitel/web-meeting-backend/infra/consul"
 	"github.com/webitel/web-meeting-backend/internal/handler"
-	"github.com/webitel/web-meeting-backend/internal/service"
 	"github.com/webitel/wlog"
 	"go.uber.org/fx"
 )
@@ -48,35 +47,7 @@ func apiCmd(cfg *config.Config) *cli.Command {
 		Flags:   apiFlags(cfg),
 		Action: func(c *cli.Context) error {
 			// Створюємо fx.App з усіма залежностями
-			app := fx.New(
-				// Конфігурація та контекст
-				fx.Supply(cfg),
-				fx.Provide(ProvideContext),
-				fx.Provide(ProvidePubSub),
-				fx.Provide(ProvideEncrypter),
-
-				// Infrastructure providers
-				fx.Provide(ProvideLogger),
-				fx.Provide(ProvideGrpcServer),
-				fx.Provide(ProvideCluster),
-				fx.Provide(ProvideChat),
-
-				// Адаптери для прив'язки інтерфейсів
-				fx.Provide(ProvideMeetingStore),   // store.MeetingStoreImpl → service.MeetingStore
-				fx.Provide(ProvideMeetingService), // service.MeetingService → handler.MeetingService
-
-				// Business logic modules
-				service.Module,
-				handler.Module,
-
-				// Invoke startup functions
-				fx.Invoke(StartGrpcServer),
-				fx.Invoke(RegisterHandlers),
-				fx.Invoke(EnsureCluster),
-
-				// fx налаштування
-				fx.NopLogger, // Вимикаємо fx логи, використовуємо наш logger
-			)
+			app := NewApp(cfg)
 
 			if err := app.Start(c.Context); err != nil {
 				wlog.Error("failed to start application", wlog.Err(err))

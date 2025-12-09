@@ -56,3 +56,7 @@ func (s *MeetingMemoryStore) Delete(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (s *MeetingMemoryStore) SetCallId(ctx context.Context, id string, callId string) error {
+	panic("DEL")
+}

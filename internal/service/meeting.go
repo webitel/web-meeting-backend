@@ -18,6 +18,8 @@ type MeetingStore interface {
 	Create(ctx context.Context, m *model.Meeting) error
 	Get(ctx context.Context, id string) (*model.Meeting, error)
 	Delete(ctx context.Context, id string) error
+	SetCallId(ctx context.Context, id string, callId string) error
+	SetSatisfaction(ctx context.Context, id string, satisfaction string) error
 }
 
 type MeetingService struct {
@@ -25,20 +27,22 @@ type MeetingService struct {
 	log       *wlog.Logger
 	store     MeetingStore
 	chat      *ChatService
+	call      *CallService
 	encrypter *encrypter.DataEncrypter
 }
 
-func NewMeetingService(ctx context.Context, cs *ChatService, log *wlog.Logger, st MeetingStore, enc *encrypter.DataEncrypter) *MeetingService {
+func NewMeetingService(ctx context.Context, cs *ChatService, call *CallService, log *wlog.Logger, st MeetingStore, enc *encrypter.DataEncrypter) *MeetingService {
 	return &MeetingService{
 		ctx:       ctx,
 		log:       log,
 		store:     st,
 		encrypter: enc,
 		chat:      cs,
+		call:      call,
 	}
 }
 
-func (s *MeetingService) CreateMeeting(ctx context.Context, title string, expireSec int64, basePath string, vars map[string]string) (string, string, error) {
+func (s *MeetingService) CreateMeeting(ctx context.Context, domainId int64, title string, expireSec int64, basePath string, vars map[string]string) (string, string, error) {
 	uuid, err := gonanoid.New()
 	if err != nil {
 		return "", "", err
@@ -60,6 +64,7 @@ func (s *MeetingService) CreateMeeting(ctx context.Context, title string, expire
 
 	meeting := &model.Meeting{
 		Id:        uuid,
+		DomainId:  domainId,
 		Title:     title,
 		CreatedAt: now,
 		ExpiresAt: expiresAt,
@@ -74,56 +79,88 @@ func (s *MeetingService) CreateMeeting(ctx context.Context, title string, expire
 	return token, url, nil
 }
 
-func (s *MeetingService) GetMeeting(ctx context.Context, token string) (*model.Meeting, error) {
-	// 1. Decode Token
-	encryptedUuid, err := base64.URLEncoding.DecodeString(token)
-	if err != nil {
-		// Invalid base64 -> Invalid token -> Don't touch DB
-		s.log.Error("invalid token", wlog.Err(err))
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	// 2. Decrypt Token to get id
-	idBytes, err := s.encrypter.Decrypt(encryptedUuid)
-	if err != nil {
-		// Decryption failed -> Invalid key/token -> Don't touch DB
-		s.log.Error("invalid token", wlog.Err(err))
-		return nil, fmt.Errorf("invalid token")
-	}
-	id := string(idBytes)
-
-	// 3. Get from DB using UUID
-	meeting, err := s.store.Get(ctx, id)
+func (s *MeetingService) GetMeeting(ctx context.Context, meetingId string) (*model.Meeting, error) {
+	id, err := s.decodeToken(meetingId)
 	if err != nil {
 		return nil, err
+	}
+
+	meeting, err := s.store.Get(ctx, id)
+	if err != nil {
+		s.log.Error(err.Error(), wlog.Err(err))
+		return nil, nil
 	}
 	if meeting == nil {
 		return nil, nil // Not found in DB
 	}
 
 	// 4. Check expiration
-	if time.Now().Unix() > meeting.ExpiresAt {
+	if time.Now().Unix() > meeting.ExpiresAt && meeting.CallId == nil {
 		return nil, fmt.Errorf("meeting expired")
 	}
+
+	meeting.AllowSatisfaction = meeting.CallId != nil && meeting.Satisfaction == nil
 
 	return meeting, nil
 }
 
-func (s *MeetingService) DeleteMeeting(ctx context.Context, token string) error {
-	// Decode & Decrypt first
-	encryptedUuid, err := base64.URLEncoding.DecodeString(token)
+func (s *MeetingService) DeleteMeeting(ctx context.Context, meetingId string) error {
+	id, err := s.decodeToken(meetingId)
 	if err != nil {
-		return fmt.Errorf("invalid token format: %w", err)
+		return err
+	}
+
+	return s.store.Delete(ctx, id)
+}
+
+func (s *MeetingService) decodeToken(meetingId string) (string, error) {
+	encryptedUuid, err := base64.URLEncoding.DecodeString(meetingId)
+	if err != nil {
+		return "", fmt.Errorf("invalid token format: %w", err)
 	}
 	uuidBytes, err := s.encrypter.Decrypt(encryptedUuid)
 	if err != nil {
-		return fmt.Errorf("invalid token: %w", err)
+		return "", fmt.Errorf("invalid token: %w", err)
 	}
-	uuid := string(uuidBytes)
 
-	return s.store.Delete(ctx, uuid)
+	return string(uuidBytes), nil
+}
+
+func (s *MeetingService) SetCallId(ctx context.Context, meetingId string, callId string) error {
+	id, err := s.decodeToken(meetingId)
+	if err != nil {
+		return err
+	}
+
+	return s.store.SetCallId(ctx, id, callId)
 }
 
 func (s *MeetingService) CloseChatByMeetingId(ctx context.Context, meetingId string) error {
 	return errors.New("TODO")
+}
+
+func (s *MeetingService) Satisfaction(ctx context.Context, meetingId string, satisfaction string) error {
+	meeting, err := s.GetMeeting(ctx, meetingId)
+	if err != nil {
+		return err
+	}
+
+	if meeting == nil {
+		return errors.New("meeting not found")
+	}
+
+	if meeting.CallId == nil {
+		return fmt.Errorf("not allow")
+	}
+
+	err = s.call.SetVariables(ctx, meeting.DomainId, *meeting.CallId, map[string]string{
+		model.MeetingSatisfactionVarName: satisfaction,
+	})
+
+	if err != nil {
+		// TODO
+		return err
+	}
+
+	return s.store.SetSatisfaction(ctx, meeting.Id, satisfaction)
 }

@@ -72,6 +72,13 @@ func NewCallsHandler(svc MeetingService, pubSub *pubsub.Manager, l *wlog.Logger)
 						continue
 					}
 
+					ctx := context.Background()
+
+					err = svc.SetCallId(ctx, *c.Data.MeetingId, c.Id)
+					if err != nil {
+						l.Error("failed to set call_id", wlog.Err(err))
+					}
+
 					err = svc.CloseChatByMeetingId(context.Background(), *c.Data.MeetingId) // TODO
 					if err != nil {
 						l.Error("failed to close chat", wlog.Err(err))
