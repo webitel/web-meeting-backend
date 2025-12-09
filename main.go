@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/webitel/web-meeting-backend/cmd"
-	_ "github.com/webitel/web-meeting-backend/internal/utils"
 )
 
 func main() {
