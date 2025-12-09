@@ -65,7 +65,7 @@ func (h *MeetingHandler) GetMeeting(ctx context.Context, request *wmb.GetMeeting
 	}
 
 	res := &wmb.Meeting{
-		Id:                meeting.Id,
+		Id:                request.Id, // todo, view internal id ?
 		Title:             meeting.Title,
 		CreatedAt:         meeting.CreatedAt,
 		ExpiresAt:         meeting.ExpiresAt,
