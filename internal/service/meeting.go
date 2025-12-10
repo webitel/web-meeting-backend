@@ -143,7 +143,7 @@ func (s *MeetingService) CloseByCall(ctx context.Context, meetingId string, call
 		return id, err
 	}
 
-	chatInfo, err := s.store.GetChatCloseInfo(ctx, id)
+	chatInfo, err := s.store.GetChatCloseInfo(ctx, meetingId)
 	if err != nil {
 		s.log.Error(err.Error(), wlog.Err(err))
 		return id, nil
