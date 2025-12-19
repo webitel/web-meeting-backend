@@ -72,6 +72,12 @@ func NewCallsHandler(svc MeetingService, pubSub *pubsub.Manager, l *wlog.Logger)
 						continue
 					}
 
+					if c.Data.IsParent {
+						l.Debug(fmt.Sprintf("skip call [%s] meeting %s is parent", c.Id, *c.Data.MeetingId))
+						msg.Ack(true)
+						continue
+					}
+
 					ctx := context.Background()
 					var id string
 

@@ -13,6 +13,7 @@ type CallHangupData struct {
 	Cause     *string `json:"cause"`
 	MeetingId *string `json:"meeting_id,omitempty"`
 	TalkSec   int     `json:"talk_sec,string"`
+	IsParent  bool    `json:"is_parent"`
 }
 
 type Call struct {
