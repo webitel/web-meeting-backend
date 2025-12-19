@@ -166,7 +166,7 @@ func (s *MeetingService) Satisfaction(ctx context.Context, meetingId string, sat
 		return errors.New("meeting not found")
 	}
 
-	if meeting.CallId == nil {
+	if meeting.CallId == nil || (meeting.Satisfaction != nil && len(*meeting.Satisfaction) > 0) {
 		return fmt.Errorf("not allow")
 	}
 
