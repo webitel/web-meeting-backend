@@ -18,7 +18,7 @@ type MeetingStore interface {
 	Create(ctx context.Context, m *model.Meeting) error
 	Get(ctx context.Context, id string) (*model.Meeting, error)
 	Delete(ctx context.Context, id string) error
-	SetCallId(ctx context.Context, id string, callId string) error
+	SetCall(ctx context.Context, id string, callId string, bridged bool) error
 	SetSatisfaction(ctx context.Context, id string, satisfaction string) error
 
 	GetChatCloseInfo(ctx context.Context, id string) (*model.ChatCloseInfo, error)
@@ -96,7 +96,7 @@ func (s *MeetingService) GetMeeting(ctx context.Context, meetingId string) (*mod
 		return nil, nil // Not found in DB
 	}
 
-	meeting.AllowSatisfaction = meeting.CallId != nil && meeting.Satisfaction == nil
+	meeting.AllowSatisfaction = meeting.Bridged && meeting.CallId != nil && meeting.Satisfaction == nil
 
 	return meeting, nil
 }
@@ -123,22 +123,13 @@ func (s *MeetingService) decodeToken(meetingId string) (string, error) {
 	return string(uuidBytes), nil
 }
 
-func (s *MeetingService) SetCallId(ctx context.Context, meetingId string, callId string) error {
-	id, err := s.decodeToken(meetingId)
-	if err != nil {
-		return err
-	}
-
-	return s.store.SetCallId(ctx, id, callId)
-}
-
-func (s *MeetingService) CloseByCall(ctx context.Context, meetingId string, callId string) (string, error) {
+func (s *MeetingService) CloseByCall(ctx context.Context, meetingId string, callId string, bridged bool) (string, error) {
 	id, err := s.decodeToken(meetingId)
 	if err != nil {
 		return "", err
 	}
 
-	err = s.store.SetCallId(ctx, id, callId)
+	err = s.store.SetCall(ctx, id, callId, bridged)
 	if err != nil {
 		return id, err
 	}

@@ -10,5 +10,6 @@ type Meeting struct {
 	Url               string            `json:"url" db:"url"`
 	CallId            *string           `json:"call_id" db:"call_id"`
 	Satisfaction      *string           `json:"satisfaction" db:"satisfaction"`
+	Bridged           bool              `json:"bridged" db:"bridged"`
 	AllowSatisfaction bool              `json:"allow_satisfaction" db:"-"`
 }

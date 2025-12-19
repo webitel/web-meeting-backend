@@ -12,6 +12,7 @@ const (
 type CallHangupData struct {
 	Cause     *string `json:"cause"`
 	MeetingId *string `json:"meeting_id,omitempty"`
+	TalkSec   int     `json:"talk_sec,string"`
 }
 
 type Call struct {

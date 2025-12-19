@@ -17,7 +17,7 @@ type MeetingService interface {
 	GetMeeting(ctx context.Context, id string) (*model.Meeting, error)
 	DeleteMeeting(ctx context.Context, id string) error
 	Satisfaction(ctx context.Context, meetingId string, satisfaction string) error
-	CloseByCall(ctx context.Context, meetingId string, callId string) (string, error)
+	CloseByCall(ctx context.Context, meetingId string, callId string, bridged bool) (string, error)
 }
 
 type MeetingHandler struct {

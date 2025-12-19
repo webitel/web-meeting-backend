@@ -75,7 +75,7 @@ func NewCallsHandler(svc MeetingService, pubSub *pubsub.Manager, l *wlog.Logger)
 					ctx := context.Background()
 					var id string
 
-					id, err = svc.CloseByCall(ctx, *c.Data.MeetingId, c.Id)
+					id, err = svc.CloseByCall(ctx, *c.Data.MeetingId, c.Id, c.Data.TalkSec > 0)
 					if err != nil {
 						l.Error("failed to set call_id", wlog.Err(err))
 					}

@@ -51,7 +51,7 @@ func (s *MeetingStoreImpl) Get(ctx context.Context, id string) (*model.Meeting, 
 	var m model.Meeting
 
 	err := s.db.Get(ctx, &m, `
-		SELECT id, domain_id, title, created_at, expires_at, variables, url, call_id, satisfaction
+		SELECT id, domain_id, title, created_at, expires_at, variables, url, call_id, satisfaction, bridged
 		FROM meetings.web_meetings
 		WHERE id = @id
 	`, pgx.NamedArgs{"id": id})
@@ -82,12 +82,14 @@ func (s *MeetingStoreImpl) DeleteExpires(ctx context.Context, now int64) error {
 	return nil
 }
 
-func (s *MeetingStoreImpl) SetCallId(ctx context.Context, id string, callId string) error {
+func (s *MeetingStoreImpl) SetCall(ctx context.Context, id string, callId string, bridged bool) error {
 	err := s.db.Exec(ctx, `update meetings.web_meetings
-set call_id = @call_id
+set call_id = @call_id,
+    bridged = @bridged
 where id = @id`, pgx.NamedArgs{
 		"id":      id,
 		"call_id": callId,
+		"bridged": bridged,
 	})
 
 	if err != nil {
