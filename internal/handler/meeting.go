@@ -71,7 +71,7 @@ func (h *MeetingHandler) GetMeeting(ctx context.Context, request *wmb.GetMeeting
 		ExpiresAt:         meeting.ExpiresAt,
 		Variables:         meeting.Variables,
 		Url:               meeting.Url,
-		AllowSatisfaction: meeting.AllowSatisfaction,
+		AllowSatisfaction: meeting.AllowSatisfaction(),
 	}
 
 	if meeting.Satisfaction != nil {
@@ -99,7 +99,7 @@ func (h *MeetingHandler) GetMeetingView(ctx context.Context, request *wmb.GetMee
 		Title:             meeting.Title,
 		CreatedAt:         meeting.CreatedAt,
 		ExpiresAt:         meeting.ExpiresAt,
-		AllowSatisfaction: meeting.AllowSatisfaction,
+		AllowSatisfaction: meeting.AllowSatisfaction(),
 	}
 
 	if meeting.Satisfaction != nil {

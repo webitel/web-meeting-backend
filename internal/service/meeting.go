@@ -96,8 +96,6 @@ func (s *MeetingService) GetMeeting(ctx context.Context, meetingId string) (*mod
 		return nil, nil // Not found in DB
 	}
 
-	meeting.AllowSatisfaction = meeting.Bridged && meeting.CallId != nil && meeting.Satisfaction == nil
-
 	return meeting, nil
 }
 
@@ -157,7 +155,7 @@ func (s *MeetingService) Satisfaction(ctx context.Context, meetingId string, sat
 		return errors.New("meeting not found")
 	}
 
-	if meeting.CallId == nil || (meeting.Satisfaction != nil && len(*meeting.Satisfaction) > 0) {
+	if !meeting.AllowSatisfaction() || satisfaction == "" {
 		return fmt.Errorf("not allow")
 	}
 
