@@ -64,6 +64,10 @@ func (h *MeetingHandler) GetMeeting(ctx context.Context, request *wmb.GetMeeting
 		return nil, status.Errorf(codes.Aborted, "expired")
 	}
 
+	if meeting.Bridged {
+		return nil, status.Errorf(codes.Aborted, "bridged")
+	}
+
 	res := &wmb.Meeting{
 		Id:                request.Id, // todo, view internal id ?
 		Title:             meeting.Title,
