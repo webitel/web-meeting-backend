@@ -39,14 +39,22 @@ func NewMeetingHandler(svc MeetingService, s *grpc_srv.Server, l *wlog.Logger) *
 }
 
 func (h *MeetingHandler) CreateMeeting(ctx context.Context, request *wmb.CreateMeetingRequest) (*wmb.CreateMeetingResponse, error) {
-	_, err := grpc_srv.SessionFromCtx(ctx)
+	sess, err := grpc_srv.SessionFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	id, url, err := h.svc.CreateMeeting(ctx, request.DomainId, request.Title, request.ExpireSec, request.BasePath, request.Variables)
+	id, url, err := h.svc.CreateMeeting(
+		ctx,
+		sess.Domain(0),
+		request.GetTitle(),
+		request.GetExpireSec(),
+		request.GetBasePath(),
+		request.GetVariables(),
+	)
 	if err != nil {
 		h.log.Error("failed to create meeting", wlog.Err(err))
+
 		return nil, err
 	}
 
