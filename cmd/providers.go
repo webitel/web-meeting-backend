@@ -3,21 +3,24 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/webitel/web-meeting-backend/infra/chat"
-	"github.com/webitel/web-meeting-backend/infra/engine"
-	"github.com/webitel/web-meeting-backend/infra/pubsub"
-	sqlStore "github.com/webitel/web-meeting-backend/internal/store/sql"
+
+	"go.uber.org/fx"
+
+	"github.com/webitel/wlog"
 
 	"github.com/webitel/web-meeting-backend/config"
+	"github.com/webitel/web-meeting-backend/infra/auth"
+	"github.com/webitel/web-meeting-backend/infra/chat"
 	"github.com/webitel/web-meeting-backend/infra/consul"
 	"github.com/webitel/web-meeting-backend/infra/encrypter"
+	"github.com/webitel/web-meeting-backend/infra/engine"
 	"github.com/webitel/web-meeting-backend/infra/grpc_srv"
+	"github.com/webitel/web-meeting-backend/infra/pubsub"
 	"github.com/webitel/web-meeting-backend/infra/sql/pgsql"
 	"github.com/webitel/web-meeting-backend/internal/handler"
 	"github.com/webitel/web-meeting-backend/internal/model"
 	"github.com/webitel/web-meeting-backend/internal/service"
-	"github.com/webitel/wlog"
-	"go.uber.org/fx"
+	sqlStore "github.com/webitel/web-meeting-backend/internal/store/sql"
 )
 
 func ProvideLogger(cfg *config.Config, lc fx.Lifecycle) (*wlog.Logger, error) {
@@ -54,8 +57,8 @@ func ProvideLogger(cfg *config.Config, lc fx.Lifecycle) (*wlog.Logger, error) {
 	return l, nil
 }
 
-func ProvideGrpcServer(cfg *config.Config, l *wlog.Logger, lc fx.Lifecycle) (*grpc_srv.Server, error) {
-	s, err := grpc_srv.New(cfg.Service.Address, l)
+func ProvideGrpcServer(cfg *config.Config, l *wlog.Logger, am auth.Manager, lc fx.Lifecycle) (*grpc_srv.Server, error) {
+	s, err := grpc_srv.New(cfg.Service.Address, l, am)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +94,6 @@ func ProvideCluster(cfg *config.Config, srv *grpc_srv.Server, l *wlog.Logger, lc
 }
 
 func ProvidePubSub(cfg *config.Config, l *wlog.Logger, lc fx.Lifecycle) (*pubsub.Manager, error) {
-
 	ps, err := pubsub.New(l, cfg.Pubsub.Address)
 	if err != nil {
 		return nil, err
@@ -107,6 +109,22 @@ func ProvidePubSub(cfg *config.Config, l *wlog.Logger, lc fx.Lifecycle) (*pubsub
 	})
 
 	return ps, nil
+}
+
+func ProvideAuth(cfg *config.Config, l *wlog.Logger, lc fx.Lifecycle) (auth.Manager, error) {
+	a := auth.NewAuthManager(1000, 15, cfg.Service.Consul, l)
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			return a.Start()
+		},
+		OnStop: func(ctx context.Context) error {
+			a.Stop()
+			return nil
+		},
+	})
+
+	return a, nil
 }
 
 func ProvideEncrypter(cfg *config.Config) (*encrypter.DataEncrypter, error) {
@@ -159,7 +177,6 @@ func ProvideMeetingStore(
 	log *wlog.Logger,
 	lc fx.Lifecycle,
 ) (service.MeetingStore, error) {
-
 	log.Info("Using SQL Meeting Store (PostgreSQL)")
 
 	db, err := pgsql.New(ctx, cfg.SqlSettings.DSN, log)

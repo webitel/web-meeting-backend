@@ -7,19 +7,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/webitel/web-meeting-backend/internal/model"
-
 	gonanoid "github.com/matoous/go-nanoid/v2"
-	"github.com/webitel/web-meeting-backend/infra/encrypter"
+
 	"github.com/webitel/wlog"
+
+	"github.com/webitel/web-meeting-backend/infra/auth"
+	"github.com/webitel/web-meeting-backend/infra/encrypter"
+	"github.com/webitel/web-meeting-backend/internal/model"
 )
 
 type MeetingStore interface {
 	Create(ctx context.Context, m *model.Meeting) error
 	Get(ctx context.Context, id string) (*model.Meeting, error)
 	Delete(ctx context.Context, id string) error
-	SetCall(ctx context.Context, id string, callId string, bridged bool) error
-	SetSatisfaction(ctx context.Context, id string, satisfaction string) error
+	SetCall(ctx context.Context, id, callId string, bridged bool) error
+	SetSatisfaction(ctx context.Context, id, satisfaction string) error
 
 	GetChatCloseInfo(ctx context.Context, id string) (*model.ChatCloseInfo, error)
 }
@@ -31,9 +33,12 @@ type MeetingService struct {
 	chat      *ChatService
 	call      *CallService
 	encrypter *encrypter.DataEncrypter
+	auth      auth.Manager
 }
 
-func NewMeetingService(ctx context.Context, cs *ChatService, call *CallService, log *wlog.Logger, st MeetingStore, enc *encrypter.DataEncrypter) *MeetingService {
+func NewMeetingService(ctx context.Context, cs *ChatService, call *CallService, log *wlog.Logger, st MeetingStore,
+	enc *encrypter.DataEncrypter, a auth.Manager,
+) *MeetingService {
 	return &MeetingService{
 		ctx:       ctx,
 		log:       log,
@@ -41,6 +46,7 @@ func NewMeetingService(ctx context.Context, cs *ChatService, call *CallService, 
 		encrypter: enc,
 		chat:      cs,
 		call:      call,
+		auth:      a,
 	}
 }
 
@@ -121,7 +127,7 @@ func (s *MeetingService) decodeToken(meetingId string) (string, error) {
 	return string(uuidBytes), nil
 }
 
-func (s *MeetingService) CloseByCall(ctx context.Context, meetingId string, callId string, bridged bool) (string, error) {
+func (s *MeetingService) CloseByCall(ctx context.Context, meetingId, callId string, bridged bool) (string, error) {
 	id, err := s.decodeToken(meetingId)
 	if err != nil {
 		return "", err
@@ -145,7 +151,7 @@ func (s *MeetingService) CloseByCall(ctx context.Context, meetingId string, call
 	return id, s.chat.CloseChat(ctx, chatInfo.ConversationId, chatInfo.CloserId, chatInfo.AuthUserId)
 }
 
-func (s *MeetingService) Satisfaction(ctx context.Context, meetingId string, satisfaction string) error {
+func (s *MeetingService) Satisfaction(ctx context.Context, meetingId, satisfaction string) error {
 	meeting, err := s.GetMeeting(ctx, meetingId)
 	if err != nil {
 		return err
@@ -162,7 +168,6 @@ func (s *MeetingService) Satisfaction(ctx context.Context, meetingId string, sat
 	err = s.call.SetVariables(ctx, meeting.DomainId, *meeting.CallId, map[string]string{
 		model.MeetingSatisfactionVarName: satisfaction,
 	})
-
 	if err != nil {
 		// TODO
 		return err
