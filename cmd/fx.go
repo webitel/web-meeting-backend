@@ -21,6 +21,7 @@ func NewApp(cfg *config.Config) *fx.App {
 		fx.Provide(ProvideCluster),
 		fx.Provide(ProvideChat),
 		fx.Provide(ProvideEngine),
+		fx.Provide(ProvideAuth),
 
 		// Адаптери для прив'язки інтерфейсів
 		fx.Provide(ProvideMeetingStore),   // store.MeetingStoreImpl → service.MeetingStore

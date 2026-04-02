@@ -2,22 +2,24 @@ package handler
 
 import (
 	"context"
-	"github.com/webitel/web-meeting-backend/infra/grpc_srv"
-	"github.com/webitel/web-meeting-backend/internal/model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"time"
 
-	wmb "github.com/webitel/web-meeting-backend/gen/web-meeting-backend"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/webitel/wlog"
+
+	wmb "github.com/webitel/web-meeting-backend/gen/web-meeting-backend"
+	"github.com/webitel/web-meeting-backend/infra/grpc_srv"
+	"github.com/webitel/web-meeting-backend/internal/model"
 )
 
 type MeetingService interface {
 	CreateMeeting(ctx context.Context, domainId int64, title string, expireSec int64, basePath string, vars map[string]string) (string, string, error)
 	GetMeeting(ctx context.Context, id string) (*model.Meeting, error)
 	DeleteMeeting(ctx context.Context, id string) error
-	Satisfaction(ctx context.Context, meetingId string, satisfaction string) error
-	CloseByCall(ctx context.Context, meetingId string, callId string, bridged bool) (string, error)
+	Satisfaction(ctx context.Context, meetingId, satisfaction string) error
+	CloseByCall(ctx context.Context, meetingId, callId string, bridged bool) (string, error)
 }
 
 type MeetingHandler struct {
@@ -27,7 +29,6 @@ type MeetingHandler struct {
 }
 
 func NewMeetingHandler(svc MeetingService, s *grpc_srv.Server, l *wlog.Logger) *MeetingHandler {
-
 	h := &MeetingHandler{
 		svc: svc,
 		log: l,
@@ -38,6 +39,24 @@ func NewMeetingHandler(svc MeetingService, s *grpc_srv.Server, l *wlog.Logger) *
 }
 
 func (h *MeetingHandler) CreateMeeting(ctx context.Context, request *wmb.CreateMeetingRequest) (*wmb.CreateMeetingResponse, error) {
+	_, err := grpc_srv.SessionFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	id, url, err := h.svc.CreateMeeting(ctx, request.DomainId, request.Title, request.ExpireSec, request.BasePath, request.Variables)
+	if err != nil {
+		h.log.Error("failed to create meeting", wlog.Err(err))
+		return nil, err
+	}
+
+	return &wmb.CreateMeetingResponse{
+		Id:  id,
+		Url: url,
+	}, nil
+}
+
+func (h *MeetingHandler) CreateMeetingNA(ctx context.Context, request *wmb.CreateMeetingRequest) (*wmb.CreateMeetingResponse, error) {
 	id, url, err := h.svc.CreateMeeting(ctx, request.DomainId, request.Title, request.ExpireSec, request.BasePath, request.Variables)
 	if err != nil {
 		h.log.Error("failed to create meeting", wlog.Err(err))

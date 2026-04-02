@@ -3,16 +3,21 @@ version: v2
 plugins:
   # Base types for Go. Generates message and enum types.
   - remote: buf.build/protocolbuffers/go:v1.30.0
-    out: gen/web-meeting-backend
+    out: gen/api
     opt: paths=source_relative
 
   # Generates Go client and server stubs for the gRPC framework.
   - remote: buf.build/grpc/go:v1.3.0
-    out: gen/web-meeting-backend
+    out: gen/api
     opt: paths=source_relative
 
 inputs:
-  - directory: "../protos/meetings"
-#  - git_repo: "https://github.com/webitel/protos"
-#    branch: "v26.02"
-#    subdir: meetings
+#  - directory: "../protos/webitel-go"
+  - git_repo: "https://github.com/webitel/protos"
+    branch: "v26.02"
+    subdir: webitel-go
+    types:
+      - api.UserinfoRequest
+      - api.Userinfo
+      - api.Auth
+      - api.Customers
