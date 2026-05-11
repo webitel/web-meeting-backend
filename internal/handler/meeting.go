@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -42,6 +44,10 @@ func (h *MeetingHandler) CreateMeeting(ctx context.Context, request *wmb.CreateM
 	sess, err := grpc_srv.SessionFromCtx(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if err = validateURL(request.BasePath); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	id, url, err := h.svc.CreateMeeting(
@@ -157,4 +163,16 @@ func (h *MeetingHandler) SatisfactionMeeting(ctx context.Context, request *wmb.S
 	}
 
 	return &wmb.SatisfactionMeetingResponse{}, nil
+}
+
+func validateURL(rawURL string) error {
+	u, err := url.ParseRequestURI(rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid URL format: %w", err)
+	}
+
+	if u.Scheme == "" || u.Host == "" {
+		return fmt.Errorf("URL must have a scheme and a host")
+	}
+	return nil
 }
