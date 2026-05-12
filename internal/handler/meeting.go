@@ -47,7 +47,7 @@ func (h *MeetingHandler) CreateMeeting(ctx context.Context, request *wmb.CreateM
 	}
 
 	if err = validateURL(request.BasePath); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, NewBadRequest("valid.base_path", err).Error())
 	}
 
 	id, url, err := h.svc.CreateMeeting(
