@@ -59,7 +59,7 @@ jobs:
       package-description: ${{ github.event.repository.description }}
       package-contents: |
         src=deploy/systemd/webitel-meetings.service dst=/etc/systemd/system/webitel-meetings.service type=config
-        src=.env.example dst=/etc/default/webitel-meetings type=config
+        src=.env.example dst=/etc/default/webitel-meetings type=config mode=0640
         
 
       package-depends: 
