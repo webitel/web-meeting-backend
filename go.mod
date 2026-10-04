@@ -1,12 +1,10 @@
 module github.com/webitel/web-meeting-backend
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.26
 
 require (
 	github.com/georgysavva/scany/v2 v2.1.4
-	github.com/go-playground/form/v4 v4.2.1
+	github.com/go-playground/form/v4 v4.5.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/consul/api v1.32.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
